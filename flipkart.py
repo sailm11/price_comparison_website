@@ -20,8 +20,7 @@ for i in range(1, int(page_number)+1):
     for i in price:
         phone_prices.append(i.text)
 
-for i in phone_name:
-    print(i)
+ 
 
 for i in phone_prices:
     print(i)
