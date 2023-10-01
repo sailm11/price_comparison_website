@@ -67,12 +67,94 @@ def amazon(itemName):
         print("\n\n\nNow Let's scrape Croma.........\n")
 
 def flipkart(itemName):
+    # itemName = itemName
+    # url= f"https://www.flipkart.com/search?q={itemName}"
+    # req = requests.get(url)
+    # content= BeautifulSoup(req.content, 'html.parser')
+    # #     print(content)
+    # name= content.find('div', {"class": '_4rR01T'})
+    # price = content.find('div', {"class": "_30jeq3 _1_WHN1"})
+    print("Let's start scraping flipkart......")
     itemName = itemName
-    url= f"https://www.flipkart.com/search?q={itemName}"
-    req = requests.get(url)
-    content= BeautifulSoup(req.content, 'html.parser')
-    #     print(content)
-    name= content.find('div', {"class": '_4rR01T'})
-    price = content.find('div', {"class": "_30jeq3 _1_WHN1"})
-    image = content.find('div', {"class": 'css-1dbjc4n r-1awozwy r-1wfhzrg r-1h0z5md'})
-    
+    baseurl='https://www.flipkart.com'
+    flipurl = f'https://www.flipkart.com/search?q={itemName}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off'
+    headers = {
+    'User-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0'
+    }
+
+        #scrape the main pro_list page of item
+    req = requests.get(flipurl,headers=headers)
+    soup = BeautifulSoup(req.content,'html.parser')
+
+    try:
+
+            #main list
+        pro_list = soup.find_all('div',class_='_2kHMtA')
+
+            #will contain links of all product in the list
+        proLink = []
+
+        for i in pro_list:
+            for link in i.find_all('a',href=True):
+                proLink.append(baseurl + link['href'])
+
+
+            #scrape data from particular item
+        itemLink = proLink[0]
+
+        req = requests.get(itemLink,headers=headers)
+        soup = BeautifulSoup(req.content,'html.parser')
+        image = soup.find_all('div',class_="CXW8mj")
+
+        for name in soup.find_all('span',class_="B_NuCI"):
+            pro_name = name.text.strip()
+        for price in soup.find_all('div',class_="_30jeq3 _16Jk6d"):
+            pro_price = price.text.strip()
+        for img in image:
+            pro_image = img.get('src')
+
+            #append the price scraped in float form
+        temp_pro_price = pro_price.replace("₹","")
+        final_pro_price = float(temp_pro_price.replace(",",""))
+        final_price_list.append(final_pro_price)
+            
+        print("\n")    
+        print(itemLink)
+        print(pro_name)
+        print(pro_price)
+        print(pro_image)
+        print("\n\n\nNow Let's scrape Amazon.....\n")
+        ################
+
+    except:
+            #main list
+        pro_list = soup.find_all('div',class_='_1xHGtK _373qXS')
+
+            #will contain links of all product in the list
+        proLink = []
+
+        for i in pro_list:
+            for link in i.find_all('a',href=True):
+                proLink.append(flipurl + link['href'])
+
+
+            #scrape data from particular item
+        itemLink = proLink[0]
+
+        req = requests.get(itemLink,headers=headers)
+        soup = BeautifulSoup(req.content,'html.parser')
+        image = soup.find_all('div',class_="CXW8mj _3nMexc")
+            
+        for name in soup.find_all('span',class_="G6XhRU"):
+            pro_name = name.text.strip()
+        for price in soup.find_all('div',class_="_30jeq3 _16Jk6d"):
+            pro_price = price.text.strip()
+        #     for img in image:
+        #         pro_image = img.get('src')
+
+        print("\n")    
+        print(itemLink)
+        print(pro_name)
+        print(pro_price)
+        #     print(pro_image)
+        print("\n\n\nNow Let's scrape Amazon.....\n")
