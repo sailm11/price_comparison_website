@@ -11,7 +11,9 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-options = webdriver.FirefoxOptions()
+options = webdriver.ChromeOptions()
+
+wait_time = 10
 
 #uncomment the below code if you don't want a browser window to open
 # options.add_argument('--headless') 
@@ -104,7 +106,8 @@ def flipkart(itemName):
 
         req = requests.get(itemLink,headers=headers)
         soup = BeautifulSoup(req.content,'html.parser')
-        image = soup.find_all('div',class_="CXW8mj")
+        image = soup.find_all('img',class_="_396cs4 _2amPTt _3qGmMb")
+        rating = soup.find('div', class_="_3LWZlK")
 
         for name in soup.find_all('span',class_="B_NuCI"):
             pro_name = name.text.strip()
@@ -158,3 +161,55 @@ def flipkart(itemName):
         print(pro_price)
         #     print(pro_image)
         print("\n\n\nNow Let's scrape Amazon.....\n")
+
+def croma(itemName):
+    itemName = itemName.replace("+","%20")
+    croma_base_url = 'https://www.croma.com'
+    croma_url = f'https://www.croma.com/searchB?q={itemName}%3Arelevance&text={itemName}'
+    driver = webdriver.Chrome(options=options)
+    headers = {
+        'User-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0'
+    }
+
+    driver.get(croma_url)
+
+    # driver.implicitly_wait(wait_time)
+
+    soup=BeautifulSoup(driver.page_source,'html.parser')
+
+        #list of all the products on the newUrl
+    pro_list = []
+    pro = soup.findAll('div',class_='content-wrap')
+    for j in pro:
+        for i in j.findAll('ul',class_='product-list'):
+            # print(i)
+            for k in i.findAll('li',class_='product-item'):
+                pro_list.append(k)
+
+    try:
+        prod = pro_list[0]
+
+        imageTag = prod.find('div',class_='product-img')
+        prodImage = imageTag.find('img')
+        prodImageLink = prodImage['src']
+        print("Image Link:",prodImageLink)
+
+        atag = prod.h3.a
+
+        prodLink = croma_base_url + atag['href']
+        print("\nProduct Link:",prodLink)
+
+        name = prod.h3.text
+        print("Name:",name)
+
+        cromaPrice = prod.find('span',class_='amount')
+            
+            #append the price scraped in float form
+        temp_pro_price = cromaPrice.replace("₹","")
+        final_pro_price = float(temp_pro_price.replace(",",""))
+        final_price_list.append(final_pro_price)
+            
+        print("\nPrice:",cromaPrice)
+        print("\n\n\nNow Let's scrape Ajio.........\n")
+    except:
+        print("Product not found!")
